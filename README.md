@@ -333,6 +333,28 @@ public class StatusViewHandler {
     }
 
     @StreamListener(KafkaProcessor.INPUT)
+    public void whenOrderCanceled_then_UPDATE_7(
+        @Payload OrderCanceled orderCanceled
+    ) {
+        try {
+            if (!orderCanceled.validate()) return;
+            // view 객체 조회
+
+            List<Status> statusList = statusRepository.findByOrderId(
+                String.valueOf(orderCanceled.getId())
+            );
+            for (Status status : statusList) {
+                // view 객체에 이벤트의 eventDirectValue 를 set 함
+                status.setOrderStatus("Order Cancelled");
+                // view 레파지 토리에 save
+                statusRepository.save(status);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @StreamListener(KafkaProcessor.INPUT)
     public void whenDeliveryFinished_then_DELETE_1(
         @Payload DeliveryFinished deliveryFinished
     ) {
